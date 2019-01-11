@@ -6,6 +6,7 @@ package diff
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -408,4 +409,26 @@ func TestStructValues(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestTime(t *testing.T) {
+	t1 := time.Now()
+	t2 := t1.Add(1 * time.Minute)
+	changelog, err := Diff(t1, t2)
+	assert.Equal(t, nil, err)
+	assert.Equal(t, len(changelog), 1)
+
+	type Order struct {
+		Time time.Time `diff:"time"`
+	}
+	a := Order{
+		Time: t1,
+	}
+	b := Order{
+		Time: t2,
+	}
+
+	changelog, err = Diff(a, b)
+	assert.Equal(t, nil, err)
+	assert.Equal(t, len(changelog), 1)
 }

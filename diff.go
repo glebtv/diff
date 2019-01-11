@@ -9,6 +9,8 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/davecgh/go-spew/spew"
 )
 
 var (
@@ -80,6 +82,10 @@ func (cl *Changelog) diff(path []string, a, b reflect.Value) error {
 	if invalid(a, b) {
 		return ErrTypeMismatch
 	}
+	spew.Dump(a.Kind())
+	spew.Dump(b.Kind())
+	spew.Dump(a)
+	spew.Dump(b)
 
 	switch {
 	case are(a, b, reflect.Struct, reflect.Invalid):
