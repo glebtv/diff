@@ -6,11 +6,9 @@ package diff
 
 import (
 	"errors"
-	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
-	"time"
 )
 
 var (
@@ -81,14 +79,12 @@ func (cl *Changelog) diff(path []string, a, b reflect.Value) error {
 	if invalid(a, b) {
 		return ErrTypeMismatch
 	}
-	if are(a, b, reflect.Struct, reflect.Invalid) {
-		if isTime(a) {
-			return cl.diffTime(path, a, b)
-		}
-	}
 
 	switch {
 	case are(a, b, reflect.Struct, reflect.Invalid):
+		if isTime(a) || isTime(b) {
+			return cl.diffTime(path, a, b)
+		}
 		return cl.diffStruct(path, a, b)
 	case are(a, b, reflect.Slice, reflect.Invalid):
 		return cl.diffSlice(path, a, b)
@@ -201,21 +197,13 @@ func invalid(a, b reflect.Value) bool {
 }
 
 func isTime(a reflect.Value) bool {
-	tm := reflect.ValueOf(time.Time{})
-	defer func() {
-		if r := recover(); r != nil {
-			fmt.Println("Recovered in f", r)
-		}
-	}()
-	if a.NumMethod() != tm.NumMethod() {
+	if !a.IsValid() {
 		return false
 	}
-	for i := 0; i < tm.NumMethod(); i++ {
-		if reflect.TypeOf(tm).Method(i).Name != reflect.TypeOf(a).Method(i).Name {
-			return false
-		}
+	if a.Type().PkgPath() == "time" && a.Type().Name() == "Time" {
+		return true
 	}
-	return true
+	return false
 }
 
 func are(a, b reflect.Value, kinds ...reflect.Kind) bool {

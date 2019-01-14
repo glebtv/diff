@@ -23,6 +23,17 @@ func (cl *Changelog) diffTime(path []string, a, b reflect.Value) error {
 	if a.Kind() != b.Kind() {
 		return ErrTypeMismatch
 	}
+
+	if !a.IsValid() && b.IsValid() {
+		cl.add(CREATE, path, nil, b.Interface())
+		return nil
+	}
+
+	if a.IsValid() && !b.IsValid() {
+		cl.add(DELETE, path, a.Interface(), nil)
+		return nil
+	}
+
 	ai := a.Interface()
 	bi := b.Interface()
 	at := ai.(time.Time)
